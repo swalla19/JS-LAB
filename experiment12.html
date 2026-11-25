@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experiment 12 - Live Task Board</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 28px 16px;
+        background: #f1f5f9;
+        color: #0f172a;
+        font-family: Arial, sans-serif;
+      }
+      .container { width: min(100%, 850px); margin: 0 auto; }
+      .panel {
+        padding: clamp(20px, 5vw, 36px);
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.09);
+      }
+      .eyebrow {
+        margin: 0 0 9px;
+        color: #0f766e;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      h1 { margin: 0; font-size: clamp(1.7rem, 5vw, 2.2rem); }
+      .description { color: #64748b; line-height: 1.6; }
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .task-form { display: flex; gap: 10px; margin: 24px 0 16px; }
+      input {
+        min-width: 0;
+        flex: 1;
+        padding: 13px 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        font: inherit;
+      }
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 12px 16px;
+        background: #0f766e;
+        color: white;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:hover:not(:disabled) { background: #115e59; }
+      button:disabled { opacity: 0.6; cursor: wait; }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 14px 0;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .filters { display: flex; gap: 7px; flex-wrap: wrap; }
+      .filter-button {
+        padding: 8px 11px;
+        background: #e2e8f0;
+        color: #334155;
+        font-size: 0.9rem;
+      }
+      .filter-button:hover:not(:disabled) { background: #cbd5e1; }
+      .filter-button.active { background: #ccfbf1; color: #115e59; }
+      .load-button { background: #2563eb; }
+      .load-button:hover:not(:disabled) { background: #1d4ed8; }
+      .status { min-height: 22px; margin: 14px 0; color: #475569; font-size: 0.92rem; }
+      .status.error { color: #b91c1c; }
+      .task-list { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
+      .task-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+      }
+      .task-item input { width: 19px; height: 19px; flex: 0 0 auto; accent-color: #0f766e; }
+      .task-title { flex: 1; overflow-wrap: anywhere; }
+      .task-item.completed .task-title { color: #94a3b8; text-decoration: line-through; }
+      .delete-button { padding: 8px 10px; background: #fee2e2; color: #991b1b; }
+      .delete-button:hover:not(:disabled) { background: #fecaca; }
+      .empty-state {
+        padding: 28px 16px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 12px;
+        color: #64748b;
+        text-align: center;
+      }
+      .author { margin: 22px 0 0; color: #94a3b8; font-size: 0.85rem; text-align: center; }
+      @media (max-width: 520px) {
+        .task-form { flex-direction: column; }
+        .task-form button, .load-button { width: 100%; }
+        .toolbar { align-items: stretch; }
+        .filters { justify-content: center; }
+        .task-item { padding: 11px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <section class="panel">
+        <p class="eyebrow">Experiment 12 · DOM · Events · Storage · AJAX</p>
+        <h1>Live Task Board</h1>
+        <p class="description">
+          Add tasks, mark them done, and filter your list. Your changes are saved in this browser.
+          Load sample tasks from the API to try the AJAX integration.
+        </p>
+
+        <form class="task-form" id="taskForm">
+          <label for="taskInput" class="visually-hidden">New task</label>
+          <input id="taskInput" type="text" maxlength="120" placeholder="What needs to get done?" required />
+          <button type="submit">Add task</button>
+        </form>
+
+        <div class="toolbar">
+          <div class="filters" role="group" aria-label="Filter tasks">
+            <button class="filter-button active" type="button" data-filter="all" aria-pressed="true">All</button>
+            <button class="filter-button" type="button" data-filter="active" aria-pressed="false">Active</button>
+            <button class="filter-button" type="button" data-filter="completed" aria-pressed="false">Completed</button>
+          </div>
+          <button class="load-button" id="loadSamplesButton" type="button">Load sample tasks</button>
+        </div>
+
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+        <ul class="task-list" id="taskList" aria-label="Tasks"></ul>
+        <p class="author">Created by Swaarnim Diwan</p>
+      </section>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="experiment12.js"></script>
+  </body>
+</html>

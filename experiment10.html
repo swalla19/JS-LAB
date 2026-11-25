@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experiment 10 - Load JSON Data</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #eff6ff, #f0fdfa);
+        color: #111827;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 24px;
+      }
+      .panel {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.1);
+        padding: 28px;
+      }
+      h1 { margin-top: 0; }
+      .description { color: #4b5563; line-height: 1.5; }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 22px 0 14px;
+      }
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: white;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:disabled { cursor: wait; opacity: 0.65; }
+      .fetch-btn { background: #2563eb; }
+      .jquery-btn { background: #0891b2; }
+      .status {
+        min-height: 24px;
+        margin: 12px 0;
+        color: #374151;
+      }
+      .status.error { color: #b91c1c; }
+      .author {
+        margin: 20px 0 0;
+        color: #6b7280;
+        text-align: center;
+        font-size: 0.9rem;
+      }
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 600px;
+      }
+      th, td {
+        padding: 13px 15px;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      th { background: #eff6ff; color: #1e3a8a; }
+      tbody tr:last-child td { border-bottom: 0; }
+      tbody tr:nth-child(even) { background: #f9fafb; }
+      @media (max-width: 600px) {
+        .container { margin: 16px auto; padding: 12px; }
+        .panel { padding: 20px; }
+        .actions { flex-direction: column; }
+        button { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <section class="panel">
+        <h1>Load and Display JSON Data</h1>
+        <p class="description">
+          Load user records from a JSON API with either the Fetch API or jQuery
+          <code>$.getJSON()</code>. Results are added dynamically to the table.
+        </p>
+
+        <div class="actions">
+          <button class="fetch-btn" id="fetchButton" type="button">Load with fetch()</button>
+          <button class="jquery-btn" id="jqueryButton" type="button">Load with $.getJSON()</button>
+        </div>
+        <p class="status" id="status" role="status" aria-live="polite">Choose a method to load the user data.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Company</th>
+              </tr>
+            </thead>
+            <tbody id="userRows">
+              <tr><td colspan="4">No data loaded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="author">Created by Swaarnim Diwan</p>
+      </section>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+      const apiUrl = 'https://jsonplaceholder.typicode.com/users';
+      const fetchButton = document.getElementById('fetchButton');
+      const jqueryButton = document.getElementById('jqueryButton');
+      const status = document.getElementById('status');
+      const userRows = document.getElementById('userRows');
+
+      function setLoading(isLoading, message) {
+        fetchButton.disabled = isLoading;
+        jqueryButton.disabled = isLoading;
+        status.classList.remove('error');
+        status.textContent = message;
+      }
+
+      function showError(message) {
+        userRows.replaceChildren();
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 4;
+        cell.textContent = 'Unable to load user data.';
+        row.appendChild(cell);
+        userRows.appendChild(row);
+        status.classList.add('error');
+        status.textContent = message;
+      }
+
+      function renderUsers(users, method) {
+        if (!Array.isArray(users)) {
+          throw new Error('The server returned data in an unexpected format.');
+        }
+
+        const rows = document.createDocumentFragment();
+        users.forEach((user) => {
+          const row = document.createElement('tr');
+          [user.id, user.name, user.email, user.company?.name].forEach((value) => {
+            const cell = document.createElement('td');
+            cell.textContent = value ?? '';
+            row.appendChild(cell);
+          });
+          rows.appendChild(row);
+        });
+
+        userRows.replaceChildren(rows);
+        status.classList.remove('error');
+        status.textContent = `Loaded ${users.length} users using ${method}.`;
+      }
+
+      async function loadWithFetch() {
+        setLoading(true, 'Loading user data with fetch()…');
+        try {
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error(`Request failed with status ${response.status}.`);
+          }
+          renderUsers(await response.json(), 'fetch()');
+        } catch (error) {
+          showError(`Fetch error: ${error.message}`);
+        } finally {
+          fetchButton.disabled = false;
+          jqueryButton.disabled = false;
+        }
+      }
+
+      function loadWithJQuery() {
+        if (!window.jQuery) {
+          showError('jQuery could not be loaded. Check your internet connection and try again.');
+          return;
+        }
+
+        setLoading(true, 'Loading user data with $.getJSON()…');
+        $.getJSON(apiUrl)
+          .done((users) => {
+            try {
+              renderUsers(users, '$.getJSON()');
+            } catch (error) {
+              showError(`Data error: ${error.message}`);
+            }
+          })
+          .fail((_, textStatus, errorThrown) => {
+            showError(`jQuery request failed: ${errorThrown || textStatus}.`);
+          })
+          .always(() => {
+            fetchButton.disabled = false;
+            jqueryButton.disabled = false;
+          });
+      }
+
+      fetchButton.addEventListener('click', loadWithFetch);
+      jqueryButton.addEventListener('click', loadWithJQuery);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experiment 8 - Gym Admission Form</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #dbeafe, #ecfeff);
+        color: #111827;
+      }
+      .container {
+        max-width: 760px;
+        margin: 40px auto;
+        padding: 24px;
+      }
+      .panel {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 35px rgba(17, 24, 39, 0.08);
+        padding: 28px;
+      }
+      h1 {
+        margin-top: 0;
+        text-align: center;
+      }
+      form {
+        display: grid;
+        gap: 18px;
+      }
+      .field {
+        display: grid;
+        gap: 8px;
+      }
+      label {
+        font-weight: 600;
+      }
+      input, select {
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #cbd5e1;
+        font-size: 1rem;
+      }
+      .error {
+        color: #dc2626;
+        min-height: 20px;
+        font-size: 0.9rem;
+      }
+      .valid {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.12);
+      }
+      .invalid {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12);
+      }
+      button {
+        background: #0ea5e9;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 18px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .success {
+        display: none;
+        background: #dcfce7;
+        color: #166534;
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-weight: 700;
+      }
+      .success.show {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="panel">
+        <h1>Gym Admission Form</h1>
+
+        <form id="gymForm" novalidate>
+          <div class="field">
+            <label for="name">Full Name</label>
+            <input id="name" name="name" type="text" placeholder="Enter your full name" />
+            <div id="nameError" class="error"></div>
+          </div>
+
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" placeholder="yourname@example.com" />
+            <div id="emailError" class="error"></div>
+          </div>
+
+          <div class="field">
+            <label for="age">Age</label>
+            <input id="age" name="age" type="number" min="10" max="90" placeholder="Age" />
+            <div id="ageError" class="error"></div>
+          </div>
+
+          <div class="field">
+            <label for="phone">Phone Number</label>
+            <input id="phone" name="phone" type="tel" placeholder="e.g. 9876543210" />
+            <div id="phoneError" class="error"></div>
+          </div>
+
+          <div class="field">
+            <label for="plan">Membership Plan</label>
+            <select id="plan" name="plan">
+              <option value="">Select a plan</option>
+              <option value="Starter">Starter</option>
+              <option value="Standard">Standard</option>
+              <option value="Premium">Premium</option>
+            </select>
+            <div id="planError" class="error"></div>
+          </div>
+
+          <button type="submit">Submit Admission</button>
+          <div id="successMessage" class="success">Admission details submitted successfully!</div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById('gymForm');
+      const successMessage = document.getElementById('successMessage');
+
+      const validators = {
+        name: {
+          test: (value) => /^[A-Za-z\s]{3,}$/.test(value.trim()),
+          message: 'Name must contain at least 3 letters and no numbers.'
+        },
+        email: {
+          test: (value) => /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value.trim()),
+          message: 'Enter a valid email address.'
+        },
+        age: {
+          test: (value) => Number(value) >= 18 && Number(value) <= 80,
+          message: 'Age must be between 18 and 80.'
+        },
+        phone: {
+          test: (value) => /^\d{10}$/.test(value.trim()),
+          message: 'Phone number must be exactly 10 digits.'
+        },
+        plan: {
+          test: (value) => value !== '',
+          message: 'Please select a membership plan.'
+        }
+      };
+
+      function validateField(fieldName) {
+        const field = form.elements[fieldName];
+        const errorBox = document.getElementById(`${fieldName}Error`);
+        const value = field.value;
+        const { test, message } = validators[fieldName];
+
+        if (!test(value)) {
+          field.classList.add('invalid');
+          field.classList.remove('valid');
+          errorBox.textContent = message;
+          return false;
+        }
+
+        field.classList.remove('invalid');
+        field.classList.add('valid');
+        errorBox.textContent = '';
+        return true;
+      }
+
+      Object.keys(validators).forEach((fieldName) => {
+        const field = form.elements[fieldName];
+
+        field.addEventListener('input', () => {
+          validateField(fieldName);
+        });
+
+        field.addEventListener('blur', () => {
+          validateField(fieldName);
+        });
+      });
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        successMessage.classList.remove('show');
+
+        const results = Object.keys(validators).map(validateField);
+        const isValid = results.every(Boolean);
+
+        if (!isValid) {
+          return;
+        }
+
+        successMessage.classList.add('show');
+        form.reset();
+        Object.keys(validators).forEach((fieldName) => {
+          const field = form.elements[fieldName];
+          field.classList.remove('valid');
+        });
+      });
+    </script>
+  </body>
+</html>

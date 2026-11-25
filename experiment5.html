@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experiment 5 - Cart Total Calculator</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #f3f7ff, #e8f7f3);
+        color: #1f2937;
+      }
+      .container {
+        max-width: 1100px;
+        margin: 40px auto;
+        padding: 24px;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 28px;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+      }
+      .panel {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+        padding: 20px;
+      }
+      .products {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+      }
+      .product-card {
+        border: 1px solid #dfe7f4;
+        border-radius: 12px;
+        padding: 16px;
+        background: #f9fbff;
+      }
+      .product-card h3 {
+        margin: 0 0 8px;
+      }
+      .price {
+        color: #1d4ed8;
+        font-weight: bold;
+        margin-bottom: 12px;
+      }
+      .add-btn {
+        width: 100%;
+        border: none;
+        background: #2563eb;
+        color: white;
+        padding: 10px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .cart-panel h2 {
+        margin-top: 0;
+      }
+      .cart-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 18px;
+      }
+      .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid #eef2ff;
+      }
+      .summary {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 14px;
+      }
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 8px 0;
+      }
+      .total {
+        font-size: 1.2rem;
+        font-weight: 700;
+      }
+      .discount-select {
+        width: 100%;
+        margin: 14px 0;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #dfe7f4;
+      }
+      @media (max-width: 760px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Cart Total Calculator</h1>
+      <div class="layout">
+        <div class="panel">
+          <div id="products" class="products"></div>
+        </div>
+
+        <aside class="panel cart-panel">
+          <h2>Your Cart</h2>
+          <ul id="cartList" class="cart-list"></ul>
+
+          <label for="coupon">Coupon</label>
+          <select id="coupon" class="discount-select">
+            <option value="NONE">No Coupon</option>
+            <option value="SAVE10">SAVE10</option>
+            <option value="SAVE15">SAVE15</option>
+          </select>
+
+          <div class="summary">
+            <div class="summary-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+            <div class="summary-row"><span>Discount</span><span id="discount">-$0.00</span></div>
+            <div class="summary-row total"><span>Total</span><span id="total">$0.00</span></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <script>
+      const products = [
+        { id: 1, name: 'Wireless Mouse', price: 25.99 },
+        { id: 2, name: 'Mechanical Keyboard', price: 79.99 },
+        { id: 3, name: '4K Monitor', price: 299.99 },
+        { id: 4, name: 'USB-C Hub', price: 44.5 },
+        { id: 5, name: 'Noise Cancelling Headphones', price: 149.99 },
+        { id: 6, name: 'Webcam', price: 89.0 }
+      ];
+
+      const cart = [];
+
+      const productContainer = document.getElementById('products');
+      const cartList = document.getElementById('cartList');
+      const subtotalEl = document.getElementById('subtotal');
+      const discountEl = document.getElementById('discount');
+      const totalEl = document.getElementById('total');
+      const couponSelect = document.getElementById('coupon');
+
+      function money(value) {
+        return `$${value.toFixed(2)}`;
+      }
+
+      function renderProducts() {
+        productContainer.innerHTML = products.map((product) => {
+          return `
+            <div class="product-card">
+              <h3>${product.name}</h3>
+              <div class="price">${money(product.price)}</div>
+              <button class="add-btn" data-id="${product.id}">Add to Cart</button>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function addToCart(productId) {
+        const item = products.find((product) => product.id === productId);
+        if (!item) return;
+
+        const existingItem = cart.find((entry) => entry.id === productId);
+
+        if (existingItem) {
+          existingItem.quantity += 1;
+        } else {
+          cart.push({ ...item, quantity: 1 });
+        }
+
+        renderCart();
+      }
+
+      function calculateDiscount(subtotal) {
+        let rate = 0;
+
+        if (subtotal >= 1200) rate = 0.15;
+        else if (subtotal >= 500) rate = 0.10;
+
+        const coupon = couponSelect.value;
+        if (coupon === 'SAVE10') rate = Math.max(rate, 0.10);
+        if (coupon === 'SAVE15') rate = Math.max(rate, 0.15);
+
+        return subtotal * rate;
+      }
+
+      function renderCart() {
+        if (cart.length === 0) {
+          cartList.innerHTML = '<li>Your cart is empty.</li>';
+          subtotalEl.textContent = money(0);
+          discountEl.textContent = money(0);
+          totalEl.textContent = money(0);
+          return;
+        }
+
+        const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const discount = calculateDiscount(subtotal);
+        const total = subtotal - discount;
+
+        cartList.innerHTML = cart.map((item) => {
+          return `
+            <li class="cart-item">
+              <span>${item.name} x ${item.quantity}</span>
+              <strong>${money(item.price * item.quantity)}</strong>
+            </li>
+          `;
+        }).join('');
+
+        subtotalEl.textContent = money(subtotal);
+        discountEl.textContent = `-${money(discount)}`;
+        totalEl.textContent = money(total);
+      }
+
+      productContainer.addEventListener('click', (event) => {
+        const button = event.target.closest('.add-btn');
+        if (!button) return;
+
+        const productId = Number(button.dataset.id);
+        addToCart(productId);
+      });
+
+      couponSelect.addEventListener('change', renderCart);
+
+      renderProducts();
+      renderCart();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experiment 7 - To-Do List App</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #ecfeff, #ecfccb);
+        color: #111827;
+      }
+      .container {
+        max-width: 700px;
+        margin: 50px auto;
+        padding: 24px;
+      }
+      .panel {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
+        padding: 24px;
+      }
+      h1 {
+        margin-top: 0;
+        text-align: center;
+      }
+      form {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      input {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+      }
+      button {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 14px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .add-btn { background: #16a34a; color: white; }
+      .delete-btn { background: #ef4444; color: white; }
+      .edit-btn { background: #fbbf24; color: #1f2937; }
+      .toggle-btn { background: #3b82f6; color: white; }
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 12px;
+        border-radius: 12px;
+        background: #f8fafc;
+        margin-bottom: 10px;
+      }
+      .task-main {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+      }
+      .task-text {
+        flex: 1;
+      }
+      .completed {
+        text-decoration: line-through;
+        color: #6b7280;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="panel">
+        <h1>To-Do List</h1>
+
+        <form id="todoForm">
+          <input id="taskInput" type="text" placeholder="Add a new task..." />
+          <button class="add-btn" type="submit">Add</button>
+        </form>
+
+        <ul id="todoList"></ul>
+      </div>
+    </div>
+
+    <script>
+      const tasks = [
+        { id: 1, text: 'Read JavaScript notes', completed: false },
+        { id: 2, text: 'Practice form validation', completed: true },
+        { id: 3, text: 'Build mini projects', completed: false }
+      ];
+
+      const todoList = document.getElementById('todoList');
+      const form = document.getElementById('todoForm');
+      const taskInput = document.getElementById('taskInput');
+
+      function renderTasks() {
+        todoList.innerHTML = tasks.map((task) => {
+          return `
+            <li data-id="${task.id}">
+              <div class="task-main">
+                <input type="checkbox" ${task.completed ? 'checked' : ''} data-role="toggle-checkbox" />
+                <span class="task-text ${task.completed ? 'completed' : ''}">${task.text}</span>
+              </div>
+              <div class="actions">
+                <button class="edit-btn" data-role="edit" data-id="${task.id}">Edit</button>
+                <button class="delete-btn" data-role="delete" data-id="${task.id}">Delete</button>
+              </div>
+            </li>
+          `;
+        }).join('');
+      }
+
+      function addTask(text) {
+        const trimmed = text.trim();
+        if (!trimmed) return;
+
+        tasks.push({
+          id: Date.now(),
+          text: trimmed,
+          completed: false
+        });
+
+        renderTasks();
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        addTask(taskInput.value);
+        taskInput.value = '';
+        taskInput.focus();
+      });
+
+      todoList.addEventListener('click', (event) => {
+        const button = event.target.closest('button');
+        if (!button) return;
+
+        const id = Number(button.dataset.id);
+        const task = tasks.find((item) => item.id === id);
+        if (!task) return;
+
+        if (button.dataset.role === 'delete') {
+          const index = tasks.findIndex((item) => item.id === id);
+          tasks.splice(index, 1);
+          renderTasks();
+        }
+
+        if (button.dataset.role === 'edit') {
+          const newText = prompt('Edit task:', task.text);
+          if (newText && newText.trim()) {
+            task.text = newText.trim();
+            renderTasks();
+          }
+        }
+      });
+
+      todoList.addEventListener('change', (event) => {
+        const checkbox = event.target.closest('input[data-role="toggle-checkbox"]');
+        if (!checkbox) return;
+
+        const listItem = checkbox.closest('li');
+        const id = Number(listItem.dataset.id);
+        const task = tasks.find((item) => item.id === id);
+
+        if (task) {
+          task.completed = checkbox.checked;
+          renderTasks();
+        }
+      });
+
+      renderTasks();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experiment 2 - Billing Calculator</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 28px 16px;
+        background: linear-gradient(135deg, #f0fdf4, #ecfeff);
+        color: #134e4a;
+        font-family: Arial, sans-serif;
+      }
+      main { width: min(100%, 620px); margin: 0 auto; }
+      .panel {
+        padding: clamp(22px, 5vw, 36px);
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 16px 40px rgba(15, 118, 110, 0.1);
+      }
+      .eyebrow {
+        margin: 0 0 9px;
+        color: #0f766e;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      h1 { margin: 0; font-size: clamp(1.7rem, 5vw, 2.2rem); }
+      .description { color: #64748b; line-height: 1.6; }
+      form { display: grid; gap: 15px; margin: 24px 0; }
+      label { display: grid; gap: 7px; color: #334155; font-weight: 700; }
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        font: inherit;
+      }
+      button {
+        padding: 12px 17px;
+        border: 0;
+        border-radius: 10px;
+        background: #0f766e;
+        color: white;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:hover { background: #115e59; }
+      .result {
+        min-height: 56px;
+        padding: 15px;
+        border-radius: 12px;
+        background: #f0fdfa;
+        color: #115e59;
+        line-height: 1.7;
+      }
+      .error { color: #b91c1c; background: #fef2f2; }
+      code { color: #0f766e; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <p class="eyebrow">Experiment 2 · Variables & Expressions</p>
+        <h1>Billing calculator</h1>
+        <p class="description">
+          Enter a unit price, quantity, and tax rate to calculate your bill.
+          The script uses <code>var</code>, <code>let</code>, <code>const</code>,
+          a template literal, and object destructuring.
+        </p>
+        <form id="billingForm">
+          <label for="priceInput">Unit price ($)
+            <input id="priceInput" name="price" type="number" min="0.01" step="0.01" value="24.50" required />
+          </label>
+          <label for="quantityInput">Quantity
+            <input id="quantityInput" name="quantity" type="number" min="1" step="1" value="2" required />
+          </label>
+          <label for="taxInput">Tax rate (%)
+            <input id="taxInput" name="tax" type="number" min="0" max="100" step="0.1" value="8.5" required />
+          </label>
+          <button type="submit">Calculate bill</button>
+        </form>
+        <div class="result" id="billingResult" role="status" aria-live="polite">
+          Your bill details will appear here.
+        </div>
+      </section>
+    </main>
+    <script src="experiment2.js" defer></script>
+  </body>
+</html>

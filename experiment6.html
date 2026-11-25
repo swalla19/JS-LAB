@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experiment 6 - String Functions & Regex</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #fff7ed, #ede9fe);
+        color: #1f2937;
+      }
+      .container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 24px;
+      }
+      .panel {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 12px 28px rgba(17, 24, 39, 0.08);
+        padding: 24px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        margin-top: 12px;
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid #d7dbe5;
+        font-size: 1rem;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 18px 0;
+      }
+      button {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .primary { background: #7c3aed; color: white; }
+      .secondary { background: #e2e8f0; color: #1e293b; }
+      .result-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        min-height: 130px;
+        white-space: pre-wrap;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+      .stat {
+        background: #f1f5f9;
+        border-radius: 12px;
+        padding: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="panel">
+        <h1>String Functions & Regex Practice</h1>
+        <label for="textInput">Paste text or email list</label>
+        <textarea id="textInput">Contact: jane.doe@example.com, support@company.org, invalid-email, and hello@school.edu</textarea>
+
+        <div class="actions">
+          <button class="primary" id="validateBtn">Validate Email</button>
+          <button class="secondary" id="extractBtn">Extract Emails</button>
+          <button class="secondary" id="analyzeBtn">Analyze Text</button>
+        </div>
+
+        <div id="resultBox" class="result-box">Results will appear here.</div>
+
+        <div class="stats">
+          <div class="stat"><strong>Words</strong><div id="wordCount">0</div></div>
+          <div class="stat"><strong>Characters</strong><div id="charCount">0</div></div>
+          <div class="stat"><strong>Sentences</strong><div id="sentenceCount">0</div></div>
+          <div class="stat"><strong>Emails</strong><div id="emailCount">0</div></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const textInput = document.getElementById('textInput');
+      const resultBox = document.getElementById('resultBox');
+      const wordCount = document.getElementById('wordCount');
+      const charCount = document.getElementById('charCount');
+      const sentenceCount = document.getElementById('sentenceCount');
+      const emailCount = document.getElementById('emailCount');
+
+      const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+      function showResult(message) {
+        resultBox.textContent = message;
+      }
+
+      function validateEmail() {
+        const content = textInput.value.trim();
+
+        if (!content) {
+          showResult('Please enter an email address to validate.');
+          return;
+        }
+
+        const isValid = emailPattern.test(content);
+        const message = isValid
+          ? `"${content}" is a valid email address.`
+          : `"${content}" is not a valid email address.`;
+
+        showResult(message);
+      }
+
+      function extractEmails() {
+        const content = textInput.value;
+        const emails = content.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [];
+
+        showResult(emails.length
+          ? `Extracted emails: ${emails.join(', ')}`
+          : 'No valid email addresses were found.');
+      }
+
+      function analyzeText() {
+        const content = textInput.value.trim();
+        const words = content ? content.split(/\s+/) : [];
+        const chars = content.length;
+        const sentences = content ? content.split(/[.!?]+/).filter(Boolean).length : 0;
+        const emails = content.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [];
+
+        wordCount.textContent = words.length;
+        charCount.textContent = chars;
+        sentenceCount.textContent = sentences;
+        emailCount.textContent = emails.length;
+
+        const uppercase = (content.match(/[A-Z]/g) || []).length;
+        const lowercase = (content.match(/[a-z]/g) || []).length;
+        const summary = `Words: ${words.length}\nCharacters: ${chars}\nSentences: ${sentences}\nUppercase letters: ${uppercase}\nLowercase letters: ${lowercase}\nEmails found: ${emails.length}`;
+
+        showResult(summary);
+      }
+
+      document.getElementById('validateBtn').addEventListener('click', validateEmail);
+      document.getElementById('extractBtn').addEventListener('click', extractEmails);
+      document.getElementById('analyzeBtn').addEventListener('click', analyzeText);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experiment 9 - Theme Preferences</title>
+    <style>
+      :root {
+        --bg: #f8fafc;
+        --panel: #ffffff;
+        --text: #111827;
+        --primary: #2563eb;
+        --accent: #f59e0b;
+      }
+
+      body.dark {
+        --bg: #111827;
+        --panel: #1f2937;
+        --text: #f3f4f6;
+        --primary: #60a5fa;
+        --accent: #fbbf24;
+      }
+
+      body.sunset {
+        --bg: #fff7ed;
+        --panel: #fff;
+        --text: #7c2d12;
+        --primary: #ea580c;
+        --accent: #f97316;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        transition: all 0.25s ease;
+      }
+      .container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 24px;
+      }
+      .panel {
+        background: var(--panel);
+        border-radius: 18px;
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+        padding: 28px;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      .theme-options {
+        display: flex;
+        gap: 14px;
+        margin: 18px 0;
+        flex-wrap: wrap;
+      }
+      .theme-btn {
+        border: 2px solid transparent;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .theme-btn.active {
+        border-color: var(--primary);
+      }
+      .accent-picker {
+        margin: 20px 0;
+      }
+      input[type="color"] {
+        width: 80px;
+        height: 44px;
+        border: none;
+        border-radius: 10px;
+        background: transparent;
+        padding: 0;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+      button {
+        border: none;
+        border-radius: 10px;
+        padding: 12px 18px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .save-btn { background: var(--primary); color: white; }
+      .reset-btn { background: #e5e7eb; color: #111827; }
+      .status {
+        margin-top: 18px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: #ecfeff;
+        color: #0f172a;
+      }
+      .preview {
+        margin-top: 20px;
+        background: var(--primary);
+        color: white;
+        padding: 18px;
+        border-radius: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="panel">
+        <h1>Theme Preferences</h1>
+
+        <div class="theme-options">
+          <button class="theme-btn" data-theme="light">Light</button>
+          <button class="theme-btn" data-theme="dark">Dark</button>
+          <button class="theme-btn" data-theme="sunset">Sunset</button>
+        </div>
+
+        <div class="accent-picker">
+          <label for="accentColor">Accent color:</label>
+          <input id="accentColor" type="color" value="#2563eb" />
+        </div>
+
+        <div class="actions">
+          <button class="save-btn" id="saveBtn">Save Preferences</button>
+          <button class="reset-btn" id="resetBtn">Reset</button>
+        </div>
+
+        <div id="status" class="status">Current theme: light</div>
+
+        <div class="preview">
+          Preview card using your selected theme.
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const body = document.body;
+      const themeButtons = document.querySelectorAll('.theme-btn');
+      const accentColorInput = document.getElementById('accentColor');
+      const saveBtn = document.getElementById('saveBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const status = document.getElementById('status');
+
+      const themeKey = 'appThemePreferences';
+      const sessionKey = 'sessionThemeData';
+
+      function applyTheme(theme) {
+        body.classList.remove('dark', 'sunset');
+        if (theme !== 'light') body.classList.add(theme);
+
+        themeButtons.forEach((button) => {
+          button.classList.toggle('active', button.dataset.theme === theme);
+        });
+
+        status.textContent = `Current theme: ${theme}`;
+      }
+
+      function savePreferences() {
+        const selectedTheme = document.querySelector('.theme-btn.active')?.dataset.theme || 'light';
+        const selectedColor = accentColorInput.value;
+
+        const preferences = {
+          theme: selectedTheme,
+          accent: selectedColor
+        };
+
+        localStorage.setItem(themeKey, JSON.stringify(preferences));
+        sessionStorage.setItem(sessionKey, JSON.stringify({ lastSaved: new Date().toLocaleTimeString(), theme: selectedTheme }));
+
+        document.documentElement.style.setProperty('--primary', selectedColor);
+        document.documentElement.style.setProperty('--accent', selectedColor);
+        applyTheme(selectedTheme);
+      }
+
+      function loadPreferences() {
+        const stored = JSON.parse(localStorage.getItem(themeKey) || '{}');
+        if (stored.theme) {
+          applyTheme(stored.theme);
+        } else {
+          applyTheme('light');
+        }
+
+        if (stored.accent) {
+          accentColorInput.value = stored.accent;
+          document.documentElement.style.setProperty('--primary', stored.accent);
+          document.documentElement.style.setProperty('--accent', stored.accent);
+        }
+
+        const sessionData = JSON.parse(sessionStorage.getItem(sessionKey) || '{}');
+        if (sessionData.theme) {
+          status.textContent += ` | Session theme: ${sessionData.theme}`;
+        }
+      }
+
+      themeButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          applyTheme(button.dataset.theme);
+        });
+      });
+
+      accentColorInput.addEventListener('input', () => {
+        document.documentElement.style.setProperty('--primary', accentColorInput.value);
+        document.documentElement.style.setProperty('--accent', accentColorInput.value);
+      });
+
+      saveBtn.addEventListener('click', savePreferences);
+
+      resetBtn.addEventListener('click', () => {
+        localStorage.removeItem(themeKey);
+        sessionStorage.removeItem(sessionKey);
+        accentColorInput.value = '#2563eb';
+        document.documentElement.style.setProperty('--primary', '#2563eb');
+        document.documentElement.style.setProperty('--accent', '#2563eb');
+        applyTheme('light');
+      });
+
+      loadPreferences();
+    </script>
+  </body>
+</html>

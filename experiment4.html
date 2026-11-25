@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experiment 4 - Palindrome Checker</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 28px 16px;
+        background: linear-gradient(135deg, #f5f3ff, #fdf2f8);
+        color: #312e81;
+        font-family: Arial, sans-serif;
+      }
+      main { width: min(100%, 620px); margin: 0 auto; }
+      .panel {
+        padding: clamp(22px, 5vw, 36px);
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 16px 40px rgba(79, 70, 229, 0.1);
+      }
+      .eyebrow {
+        margin: 0 0 9px;
+        color: #7c3aed;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      h1 { margin: 0; font-size: clamp(1.7rem, 5vw, 2.2rem); }
+      .description { color: #64748b; line-height: 1.6; }
+      form { display: grid; gap: 14px; margin: 24px 0; }
+      label { display: grid; gap: 7px; color: #334155; font-weight: 700; }
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        font: inherit;
+      }
+      button {
+        padding: 12px 17px;
+        border: 0;
+        border-radius: 10px;
+        background: #7c3aed;
+        color: white;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:hover { background: #6d28d9; }
+      .result {
+        min-height: 56px;
+        padding: 15px;
+        border-radius: 12px;
+        background: #f5f3ff;
+        color: #5b21b6;
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+      }
+      .error { color: #b91c1c; background: #fef2f2; }
+      .counter { color: #64748b; font-size: 0.92rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <p class="eyebrow">Experiment 4 · Functions, Scope & Closures</p>
+        <h1>Palindrome checker</h1>
+        <p class="description">
+          Check whether a word or phrase reads the same backward. Letter case,
+          spaces, and punctuation are ignored. Empty input demonstrates error handling.
+        </p>
+        <form id="palindromeForm">
+          <label for="textInput">Word or phrase
+            <input id="textInput" name="text" autocomplete="off" placeholder="Try: Never odd or even" />
+          </label>
+          <button type="submit">Check palindrome</button>
+        </form>
+        <div class="result" id="palindromeResult" role="status" aria-live="polite">
+          Your result will appear here.
+        </div>
+        <p class="counter" id="attemptCounter">Checks: 0</p>
+      </section>
+    </main>
+    <script src="experiment4.js" defer></script>
+  </body>
+</html>
